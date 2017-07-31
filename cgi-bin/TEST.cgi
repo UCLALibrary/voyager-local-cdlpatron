@@ -93,6 +93,9 @@ sub get_patron_info_by_barcode {
   my %patron;
   my @data;
 
+  # Force to upper-case for db query
+  $barcode = uc($barcode);
+
   my $sql = 
     "SELECT
        p.patron_id
@@ -114,7 +117,11 @@ sub get_patron_info_by_barcode {
      FROM patron p
      INNER JOIN patron_barcode pb ON p.patron_id = pb.patron_id
      INNER JOIN patron_group pg ON pb.patron_group_id = pg.patron_group_id
-     WHERE pb.patron_barcode = Upper('$barcode')
+     -- Barcode is exact match, OR user supplied first 9 digits of a 10-digit UCLA-based barcode.
+     -- Have to escape regex-ending dollar sign within this perl string.
+     WHERE ( pb.patron_barcode = '$barcode'
+         OR  ( substr(pb.patron_barcode, 1, 9) = '$barcode' AND regexp_like(pb.patron_barcode, '^[0-9]{10}\$') )
+     )
      AND pb.barcode_status = 1 -- Active
     ";
 

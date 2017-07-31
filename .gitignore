@@ -1,0 +1,4 @@
+# Keep these out of the repo
+config
+lib
+log

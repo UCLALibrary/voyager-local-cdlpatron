@@ -103,7 +103,8 @@ sub get_patron_info_by_barcode {
      , p.first_name AS FirstName
      , p.middle_name AS MiddleName
      , To_Char(p.expire_date, 'YYYY-MM-DD HH24:MI:SS') AS ExpirationDate
-     , To_Char(p.suspension_date, 'YYYY-MM-DD HH24:MI:SS') AS SuspensionDate
+	 -- Only send suspension date if it is in the future
+	 , CASE WHEN p.suspension_date >= sysdate THEN To_Char(p.suspension_date, 'YYYY-MM-DD HH24:MI:SS') ELSE null END AS SuspensionDate
      , (p.total_fees_due / 100) AS FeeBalance
      , (SELECT psc.patron_stat_desc FROM patron_stat_code psc INNER JOIN patron_stats ps ON psc.patron_stat_id = ps.patron_stat_id
           WHERE ps.patron_id = p.patron_id AND psc.patron_stat_desc LIKE 'WDDS%'
